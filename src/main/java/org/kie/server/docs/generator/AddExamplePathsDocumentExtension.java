@@ -17,18 +17,19 @@
 package org.kie.server.docs.generator;
 
 import java.io.StringReader;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 
+import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.markup.builder.MarkupDocBuilder;
 import io.github.swagger2markup.markup.builder.MarkupLanguage;
-import io.github.swagger2markup.model.PathOperation;
 import io.github.swagger2markup.spi.PathsDocumentExtension;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.Parameter;
 
 public class AddExamplePathsDocumentExtension extends PathsDocumentExtension {
+
+    @Override
+    public void init(Swagger2MarkupConverter.Context globalContext) {
+        super.init(globalContext);
+
+    }
 
     @Override
     public void apply(Context context) {
@@ -36,37 +37,12 @@ public class AddExamplePathsDocumentExtension extends PathsDocumentExtension {
         MarkupDocBuilder markupBuilder = context.getMarkupDocBuilder();
         Position position = context.getPosition();
 
-        if (context.getOperation().isPresent()) {
-            PathOperation operation = context.getOperation().get();
-            if (position.equals(Position.OPERATION_PARAMETERS_AFTER)) {
+        if (position.equals(Position.DOCUMENT_BEFORE)) {
+            
+            markupBuilder.importMarkup(new StringReader(":toc: left"),MarkupLanguage.ASCIIDOC);
 
-                Optional<Parameter> param = operation.getOperation().getParameters().stream().filter(p -> p instanceof BodyParameter).findFirst();
-                if (param.isPresent()) {
-
-                    Map<String, Object> extensions = param.get().getVendorExtensions();
-
-                    if (extensions.containsKey("x-examples")) {
-                        Map<String, Object> examples = (Map<String, Object>) extensions.get("x-examples");
-                        markupBuilder.sectionTitleLevel3("Examples");
-
-                        for (Entry<String, Object> entry : examples.entrySet()) {
-
-                            StringBuilder sourceExample = new StringBuilder();
-                            sourceExample
-                                .append("[source]\n")
-                                .append("----\n")
-                                .append(entry.getValue())
-                                .append("\n")
-                                .append("----\n");
-
-                            markupBuilder.sectionTitleLevel4(entry.getKey())
-                            .importMarkup(new StringReader(sourceExample.toString()), MarkupLanguage.ASCIIDOC)
-                            .newLine();
-                        }
-                    }
-                }
-            }
         }
+
     }
 
 }

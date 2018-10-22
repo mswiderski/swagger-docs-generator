@@ -21,15 +21,25 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import io.github.swagger2markup.GroupBy;
+import io.github.swagger2markup.OrderBy;
+import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
+import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
 
 public class GenerateDocs {
 
     public static void main(String[] args) throws MalformedURLException {
         URL remoteSwaggerFile = new URL("http://localhost:8080/kie-server/services/rest/server/swagger.json");
         Path outputDirectory = Paths.get("target/asciidoc");
-
+        Swagger2MarkupConfig config = new Swagger2MarkupConfigBuilder()
+                .withGeneratedExamples()
+                .withOperationOrdering(OrderBy.NATURAL)
+                .withPathsGroupedBy(GroupBy.TAGS)
+                .build();
+                
         Swagger2MarkupConverter.from(remoteSwaggerFile) 
+        .withConfig(config)
                 .build() 
                 .toFolder(outputDirectory);
     }
